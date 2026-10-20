@@ -12,6 +12,8 @@ from fastapi.responses import StreamingResponse
 from langchain_core.runnables.graph import Graph
 from pydantic import BaseModel
 
+from dotenv import load_dotenv
+load_dotenv()
 
 BACKEND_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -75,6 +77,8 @@ def _debate_events(ticker: str):
         openings = []  # bull and bear run in parallel; hold the pair so bull always leads
         for chunk in stream:
             for update in chunk.values():
+                if not update:  # nodes that return {} (e.g. review) stream as None
+                    continue
                 entries = update.get("debate_log", [])
                 if entries and entries[0]["round"] == 0:
                     openings.extend(entries)
